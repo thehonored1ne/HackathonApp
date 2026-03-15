@@ -179,3 +179,46 @@ Rules:
 - If the agent starts generating code you didn't ask for — stop it and re-send the current step prompt
 - If something breaks, use the Bug Fix prompt before asking the agent to continue
 - One feature at a time — finish and verify before starting the next
+
+---
+
+## 📁 File Scope — When to Limit What the Agent Reads
+
+Gemini sometimes does a full project scan unprompted, which fills its context window
+with irrelevant files and slows it down. Use this rule situationally:
+
+### ✅ Limit file scope when WRITING or FIXING code
+Add this to the top of your prompt:
+
+```
+Only read these files:
+- AGENTS.md
+- CONVENTIONS.md
+- [list only the files relevant to this task]
+
+Do not scan any other files or directories.
+```
+
+**By step, here's what to include:**
+
+| Step | Files to include |
+|------|-----------------|
+| Domain layer | AGENTS.md, CONVENTIONS.md |
+| Data layer | AGENTS.md, CONVENTIONS.md + domain files just created |
+| Presentation layer | AGENTS.md, CONVENTIONS.md + entity + repository interface |
+| Wiring | AGENTS.md, ARCHITECTURE.md + app_router.dart + feature page file |
+| Bug fix | AGENTS.md, CONVENTIONS.md + only the broken file |
+
+### ❌ Skip file limiting when EXPLORING or ASKING QUESTIONS
+Let the agent scan freely when you need broad awareness:
+
+```
+Look at the current project structure and tell me...
+Does this pattern already exist somewhere in the project?
+```
+
+### ⚠️ Important caveat
+If you forget to include a file the agent actually needs
+(e.g. the Failure base class from core/errors/), it will either
+make one up or generate broken imports. When in doubt, always
+include core/errors/ and core/usecases/ in every code generation prompt.
